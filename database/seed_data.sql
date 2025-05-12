@@ -14,3 +14,5 @@ VALUES (202, '대리', 2);
 
 INSERT INTO positions (position_id, position_name, rank_level)
 VALUES (203, '과장', 3);
+
+COMMIT;
