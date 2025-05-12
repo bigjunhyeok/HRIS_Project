@@ -20,17 +20,18 @@ def get_sqlplus_conn_str():
     return f"{user}/{password}@{host}:{port}/{service}"
 
 def execute_sql_file_with_sqlplus(file_path, label=None):
-    """
-    sqlplus를 이용해 SQL 파일 실행
-    """
     conn_str = get_sqlplus_conn_str()
+    tag = f"[{label}]" if label else ""
+
+    print(f"📄 {tag} 파일 실행 시작: {file_path}")
 
     if not os.path.isfile(file_path):
-        print(f"❌ 파일 없음: {file_path}")
+        print(f"❌ {tag} 파일 없음: {file_path}")
         return
 
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
+
     if 'exit;' not in content.lower():
         content += "\nEXIT;\n"
 
@@ -38,24 +39,33 @@ def execute_sql_file_with_sqlplus(file_path, label=None):
         tmp.write(content)
         tmp_path = tmp.name
 
+    print(f"📂 임시 SQL 파일 경로: {tmp_path}")
+
     env = os.environ.copy()
     env["NLS_LANG"] = ".AL32UTF8"
 
-    result = subprocess.run(
-        ["sqlplus", "-s", conn_str, f"@{tmp_path}"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        env=env
-    )
+    try:
+        result = subprocess.run(
+            ["sqlplus", "-s", conn_str, f"@{tmp_path}"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env=env,
+            timeout=15  # 타임아웃 설정 (중요!)
+        )
+    except subprocess.TimeoutExpired:
+        print(f"⏱ {tag} 실행 시간 초과: sqlplus가 응답하지 않음")
+        return
 
-    tag = f"[{label}]" if label else ""
+    print(f"🔎 {tag} STDOUT:\n{result.stdout.strip()}")
+    print(f"🛠 {tag} STDERR:\n{result.stderr.strip()}")
+
     if result.returncode == 0:
         print(f"✅ {tag} 실행 완료")
     else:
-        print(f"❌ {tag} 실패\n{result.stderr.strip() or result.stdout.strip()}")
+        print(f"❌ {tag} 실패 (코드 {result.returncode})")
 
 if __name__ == "__main__":
     execute_sql_file_with_sqlplus("database/drop_hris.sql", label="DROP")
     execute_sql_file_with_sqlplus("database/init_hris.sql", label="INIT")
-    #execute_sql_file_with_sqlplus("database/seed_data.sql", label="SEED")
+    execute_sql_file_with_sqlplus("database/seed_data.sql", label="SEED")

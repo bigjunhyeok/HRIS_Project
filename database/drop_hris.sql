@@ -2,9 +2,6 @@
 -- HRIS 시스템 객체 삭제 스크립트
 -- ===============================
 
-SET ECHO ON
-WHENEVER SQLERROR CONTINUE
-
 -- 테이블 삭제
 DROP TABLE employee_jobs CASCADE CONSTRAINTS;
 DROP TABLE positions CASCADE CONSTRAINTS;

@@ -3,7 +3,7 @@ INSERT INTO departments (dept_id, dept_name, location)
 VALUES (101, '인사팀', '서울 본사');
 
 INSERT INTO departments (dept_id, dept_name, location)
-VALUES (102, '개발팀', '판교 R&D 센터');
+VALUES (102, '개발팀', '판교 RandD 센터');
 
 -- 직급 더미 데이터
 INSERT INTO positions (position_id, position_name, rank_level)
